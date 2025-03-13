@@ -6,12 +6,9 @@ const Home = () => {
   const navigate = useNavigate();
 
   const handleSelect = (userType) => {
-    // Navigate to the respective auth page based on role
-    if (userType === 'trucker') {
-      navigate('/auth/trucker');
-    } else if (userType === 'shipper') {
-      navigate('/auth/shipper');
-    }
+    // Store the selected role in local storage
+    localStorage.setItem('userRole', userType);
+    navigate('/auth'); // Redirect to a single signup page
   };
 
   return (

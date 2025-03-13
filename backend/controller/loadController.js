@@ -3,12 +3,18 @@ import Load from '../models/load.js';
 
 export const createLoad = async (req, res) => {
   try {
+    // Ensure only shippers can post loads
+    if (req.user.role !== 'shipper') {
+      return res.status(403).json({ message: 'Only shippers can post loads.' });
+    }
+
     const { details, route } = req.body;
     const newLoad = new Load({
       shipperId: req.user.id,
       details,
       route,
     });
+
     await newLoad.save();
     res.status(201).json({ message: 'Load created successfully.', load: newLoad });
   } catch (error) {
@@ -18,32 +24,22 @@ export const createLoad = async (req, res) => {
 
 export const getLoads = async (req, res) => {
   try {
-    const { route, startDate, endDate } = req.query;
-    const query = { status: 'open' };
+    let filters = {};
 
-    // Route filter (if provided)
-    if (route) {
-      query.route = { $regex: route, $options: 'i' };
+    // Apply filters if query parameters exist
+    if (req.query.route) {
+      filters.route = { $regex: req.query.route, $options: 'i' }; // Case-insensitive search
+    }
+    if (req.query.startDate) {
+      filters.createdAt = { $gte: new Date(req.query.startDate) };
+    }
+    if (req.query.endDate) {
+      filters.createdAt = { ...filters.createdAt, $lte: new Date(req.query.endDate) };
     }
 
-    // Date filtering with validation
-    if (startDate || endDate) {
-      query.createdAt = {};
-      if (startDate && !isNaN(new Date(startDate).getTime())) {
-        query.createdAt.$gte = new Date(startDate);
-      }
-      if (endDate && !isNaN(new Date(endDate).getTime())) {
-        query.createdAt.$lte = new Date(endDate);
-      }
-    }
-
-    // Debug: Log the query
-    console.log('Query:', query);
-
-    const loads = await Load.find(query);
+    const loads = await Load.find(filters).sort({ createdAt: -1 });
     res.json(loads);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch loads.', error: error.message });
   }
 };
-
