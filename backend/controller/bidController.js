@@ -1,6 +1,7 @@
 // controllers/bidController.js
 import Bid from '../models/Bid.js';
 import Load from '../models/load.js';
+import User from '../models/user.js';
 
 export const placeBid = async (req, res) => {
   try {

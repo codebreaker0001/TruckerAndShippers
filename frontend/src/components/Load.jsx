@@ -17,7 +17,7 @@ const Loads = () => {
   // For truckers: track which load has bid form open
   const [activeBidLoadId, setActiveBidLoadId] = useState(null);
   
-  // For shippers: track which load's bids are visible
+  // For shippers: track which load's bids are visible (allow multiple loads)
   const [visibleBids, setVisibleBids] = useState({});
   
   // For shippers: track which load's tracking is active
@@ -77,6 +77,7 @@ const Loads = () => {
 
   // For shippers: Toggle view bids for a load and fetch bids if needed
   const toggleViewBids = async (loadId) => {
+    // Allow multiple loads' bids to be toggled independently
     if (visibleBids[loadId]) {
       // Hide bids if already visible
       setVisibleBids((prev) => {
@@ -107,6 +108,8 @@ const Loads = () => {
     setTrackingLoadId((prev) => (prev === loadId ? null : loadId));
   };
 
+  
+
   // For shippers: Call API to select the winning bid for a load
   const handleSelectWinningBid = async (loadId) => {
     try {
@@ -125,6 +128,8 @@ const Loads = () => {
       alert('Failed to select winning bid.');
     }
   };
+
+  
 
   return (
     <div className="container mx-auto p-4">
@@ -246,10 +251,12 @@ const Loads = () => {
             )}
 
             {/* For Shippers: Display Bids if toggled */}
+            
             {userRole === 'shipper' && visibleBids[load._id] && (
               <div className="mt-4 p-4 border-t">
                 <h4 className="text-lg font-semibold mb-2">Bids for this Load:</h4>
                 {visibleBids[load._id].length > 0 ? (
+
                   <ul className="space-y-2">
                     {visibleBids[load._id].map((bid) => (
                       <li key={bid._id} className="p-2 border rounded">
@@ -263,7 +270,8 @@ const Loads = () => {
                 ) : (
                   <p>No bids placed for this load yet.</p>
                 )}
-                {load.status === 'open' && (
+                {/* Always show the Select Winning Bid button if there are bids and load is open */}
+                {visibleBids[load._id] && visibleBids[load._id].length > 0 && (
                   <button
                     onClick={() => handleSelectWinningBid(load._id)}
                     className="mt-4 w-full bg-green-600 text-white p-2 rounded hover:bg-green-700 transition"

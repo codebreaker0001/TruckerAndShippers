@@ -22,7 +22,7 @@ const BidForm = ({ loadId, onBidPlaced }) => {
       alert(err.response?.data?.message || 'Failed to place bid.');
     }
   };
-  
+
   return (
     <form onSubmit={handleBidSubmit} className="space-y-2">
       <input

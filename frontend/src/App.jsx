@@ -8,6 +8,9 @@ import Navbar from './components/Navbar';
 import { getToken } from './utils/auth';
 
 function App() {
+
+  console.log(console.log(import.meta.env.VITE_BACKEND_URL));
+  
   return (
     <Router>
       <Navbar />
