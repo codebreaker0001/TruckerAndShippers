@@ -52,7 +52,6 @@
 - **Frontend:** React (with Vite), Next.js (if used), Tailwind CSS, React Router, React-Leaflet, Socket.io-client
 - **Backend:** Node.js, Express, MongoDB (via Mongoose), Socket.io
 - **Authentication:** JWT (JSON Web Tokens)
-- **Deployment:** Docker/Heroku/AWS (choose your preferred option)
 
 ## Installation
 
@@ -77,41 +76,4 @@
     PORT=5000
    npm run dev
 
-
-/your-project-folder
-├── backend
-│   ├── controllers
-│   │   ├── authController.js
-│   │   ├── bidController.js
-│   │   └── benefitsController.js
-│   ├── models
-│   │   ├── User.js
-│   │   ├── Load.js
-│   │   ├── Bid.js
-│   │   └── Claim.js
-│   ├── routes
-│   │   ├── truckerAuth.js
-│   │   ├── shipperAuth.js
-│   │   ├── load.js
-│   │   ├── bid.js
-│   │   └── benefits.js
-│   ├── config
-│   │   └── db.js
-│   ├── server.js
-│   └── .env
-├── frontend
-│   ├── src
-│   │   ├── components
-│   │   │   ├── Home.jsx
-│   │   │   ├── AuthPage.jsx
-│   │   │   ├── Loads.jsx
-│   │   │   ├── Benefits.jsx
-│   │   │   ├── BidForm.jsx
-│   │   │   └── LoadTracking.jsx
-│   │   ├── App.jsx
-│   │   ├── api.js
-│   │   └── index.css
-│   ├── package.json
-│   └── vite.config.js
-└── README.md
 
