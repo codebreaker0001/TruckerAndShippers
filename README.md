@@ -67,3 +67,51 @@
    ```bash
    git clone https://github.com/yourusername/your-repo.git
    cd your-repo
+2. **backend setup**
+
+   ```bash
+   cd backend
+   npm install
+   MONGO_URI=mongodb+srv://<username>:<password>@clustername.mongodb.net/loadpostingdb?retryWrites=true&w=majority
+    JWT_SECRET=your_jwt_secret
+    PORT=5000
+   npm run dev
+
+
+/your-project-folder
+├── backend
+│   ├── controllers
+│   │   ├── authController.js
+│   │   ├── bidController.js
+│   │   └── benefitsController.js
+│   ├── models
+│   │   ├── User.js
+│   │   ├── Load.js
+│   │   ├── Bid.js
+│   │   └── Claim.js
+│   ├── routes
+│   │   ├── truckerAuth.js
+│   │   ├── shipperAuth.js
+│   │   ├── load.js
+│   │   ├── bid.js
+│   │   └── benefits.js
+│   ├── config
+│   │   └── db.js
+│   ├── server.js
+│   └── .env
+├── frontend
+│   ├── src
+│   │   ├── components
+│   │   │   ├── Home.jsx
+│   │   │   ├── AuthPage.jsx
+│   │   │   ├── Loads.jsx
+│   │   │   ├── Benefits.jsx
+│   │   │   ├── BidForm.jsx
+│   │   │   └── LoadTracking.jsx
+│   │   ├── App.jsx
+│   │   ├── api.js
+│   │   └── index.css
+│   ├── package.json
+│   └── vite.config.js
+└── README.md
+
