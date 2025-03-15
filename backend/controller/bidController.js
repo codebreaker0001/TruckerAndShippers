@@ -4,37 +4,32 @@ import Load from '../models/load.js';
 
 export const placeBid = async (req, res) => {
   try {
-    // Only truckers can place bids
     if (req.user.role !== 'trucker') {
       return res.status(403).json({ message: 'Only truckers can place bids.' });
     }
 
+    // Retrieve trucker details
+    const trucker = await User.findById(req.user.id);
+    if (!trucker) {
+      return res.status(400).json({ message: 'Trucker not found.' });
+    }
+
+    // Check eligibility criteria before allowing bid
+    const licenseYears = (new Date().getFullYear()) - (new Date(trucker.licenseIssueDate).getFullYear());
+    if (trucker.accidents > 0 || trucker.theftComplaints > 0 || trucker.truckAge > 5 || licenseYears < 5) {
+      return res.status(403).json({ message: 'You do not meet the eligibility criteria to place bids.' });
+    }
+
+    // Proceed with bid placement
     const { loadId, bidAmount } = req.body;
-
-    // Verify that the load exists
-    const load = await Load.findById(loadId);
-    if (!load) {
-      return res.status(404).json({ message: 'Load not found.' });
-    }
-
-    // Ensure the load is still open for bidding
-    if (load.status !== 'open') {
-      return res.status(400).json({ message: 'Bidding is closed for this load.' });
-    }
-
-    // Create and save the bid
-    const bid = new Bid({
-      loadId,
-      truckerId: req.user.id,
-      bidAmount,
-    });
-    await bid.save();
-
-    res.status(201).json({ message: 'Bid placed successfully.', bid });
+    const newBid = new Bid({ loadId, truckerId: req.user.id, bidAmount });
+    await newBid.save();
+    res.status(201).json({ message: 'Bid placed successfully.', bid: newBid });
   } catch (error) {
     res.status(500).json({ message: 'Failed to place bid.', error: error.message });
   }
 };
+
 
 export const getBidsForLoad = async (req, res) => {
   try {

@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
 import { getToken } from '../utils/auth';
-import BidForm from './BidForm'; // for truckers, already integrated
+import BidForm from './BidForm'; // For truckers to place bids
+import LoadTracking from './LoadTracking'; // For shippers to track loads
 
 const Loads = () => {
   const [loads, setLoads] = useState([]);
@@ -12,16 +13,20 @@ const Loads = () => {
   const [filterRoute, setFilterRoute] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  
+
   // For truckers: track which load has bid form open
   const [activeBidLoadId, setActiveBidLoadId] = useState(null);
   
   // For shippers: track which load's bids are visible
   const [visibleBids, setVisibleBids] = useState({});
+  
+  // For shippers: track which load's tracking is active
+  const [trackingLoadId, setTrackingLoadId] = useState(null);
 
   useEffect(() => {
     fetchLoads();
     const storedRole = localStorage.getItem('userRole');
+    console.log('User role from localStorage:', storedRole);
     if (storedRole) {
       setUserRole(storedRole);
     }
@@ -36,6 +41,7 @@ const Loads = () => {
       const res = await api.get(`/loads${query}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
+      console.log('Fetched loads:', res.data);
       setLoads(res.data);
     } catch (err) {
       console.error('Error fetching loads:', err.response?.data);
@@ -65,27 +71,28 @@ const Loads = () => {
 
   // For truckers: Toggle bid form for a specific load
   const toggleBidForm = (loadId) => {
+    console.log('Toggling bid form for load:', loadId);
     setActiveBidLoadId(activeBidLoadId === loadId ? null : loadId);
   };
 
   // For shippers: Toggle view bids for a load and fetch bids if needed
   const toggleViewBids = async (loadId) => {
     if (visibleBids[loadId]) {
-      // If bids are already visible, hide them
+      // Hide bids if already visible
       setVisibleBids((prev) => {
         const newBids = { ...prev };
         delete newBids[loadId];
         return newBids;
       });
     } else {
-      // Fetch bids for this load
       try {
         const res = await api.get(`/bids/load/${loadId}`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         });
+        console.log(`Fetched bids for load ${loadId}:`, res.data);
         setVisibleBids((prev) => ({
           ...prev,
-          [loadId]: res.data, // assuming res.data is an array of bids
+          [loadId]: res.data,
         }));
       } catch (err) {
         console.error('Error fetching bids:', err.response?.data);
@@ -94,15 +101,20 @@ const Loads = () => {
     }
   };
 
+  // For shippers: Toggle load tracking for a load
+  const toggleTracking = (loadId) => {
+    console.log('Toggling tracking for load:', loadId);
+    setTrackingLoadId((prev) => (prev === loadId ? null : loadId));
+  };
+
   // For shippers: Call API to select the winning bid for a load
   const handleSelectWinningBid = async (loadId) => {
     try {
-      const res = await api.post(`/bids/select/${loadId}`, {}, {
+      await api.post(`/bids/select/${loadId}`, {}, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       alert('Winning bid selected.');
       fetchLoads();
-      // Optionally clear visible bids for that load
       setVisibleBids((prev) => {
         const newBids = { ...prev };
         delete newBids[loadId];
@@ -186,7 +198,7 @@ const Loads = () => {
         </div>
       )}
 
-      {/* Display Loads List */}
+      {/* Loads List */}
       <ul className="space-y-4">
         {loads.map((load) => (
           <li key={load._id} className="bg-white p-4 rounded shadow mb-4">
@@ -198,7 +210,7 @@ const Loads = () => {
                   Posted on: {new Date(load.createdAt).toLocaleDateString()}
                 </p>
               </div>
-              {/* For Truckers: Button to toggle Bid Form */}
+              {/* For Truckers: Toggle Bid Form */}
               {userRole === 'trucker' && (
                 <button
                   onClick={() => toggleBidForm(load._id)}
@@ -207,14 +219,22 @@ const Loads = () => {
                   {activeBidLoadId === load._id ? 'Cancel Bid' : 'Place Bid'}
                 </button>
               )}
-              {/* For Shippers: Button to toggle viewing bids */}
+              {/* For Shippers: Buttons to View Bids and Track Load */}
               {userRole === 'shipper' && (
-                <button
-                  onClick={() => toggleViewBids(load._id)}
-                  className="bg-purple-600 text-white p-2 rounded hover:bg-purple-700 transition"
-                >
-                  {visibleBids[load._id] ? 'Hide Bids' : 'View Bids'}
-                </button>
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => toggleViewBids(load._id)}
+                    className="bg-purple-600 text-white p-2 rounded hover:bg-purple-700 transition"
+                  >
+                    {visibleBids[load._id] ? 'Hide Bids' : 'View Bids'}
+                  </button>
+                  <button
+                    onClick={() => toggleTracking(load._id)}
+                    className="bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700 transition"
+                  >
+                    {trackingLoadId === load._id ? 'Hide Tracking' : 'Track Load'}
+                  </button>
+                </div>
               )}
             </div>
 
@@ -225,7 +245,7 @@ const Loads = () => {
               </div>
             )}
 
-            {/* For Shippers: Display bids if toggled */}
+            {/* For Shippers: Display Bids if toggled */}
             {userRole === 'shipper' && visibleBids[load._id] && (
               <div className="mt-4 p-4 border-t">
                 <h4 className="text-lg font-semibold mb-2">Bids for this Load:</h4>
@@ -243,7 +263,6 @@ const Loads = () => {
                 ) : (
                   <p>No bids placed for this load yet.</p>
                 )}
-                {/* Button to select the winning bid if load is still open */}
                 {load.status === 'open' && (
                   <button
                     onClick={() => handleSelectWinningBid(load._id)}
@@ -252,6 +271,13 @@ const Loads = () => {
                     Select Winning Bid
                   </button>
                 )}
+              </div>
+            )}
+
+            {/* For Shippers: Display Load Tracking if toggled */}
+            {userRole === 'shipper' && trackingLoadId === load._id && (
+              <div className="mt-4">
+                <LoadTracking loadId={load._id} />
               </div>
             )}
           </li>
