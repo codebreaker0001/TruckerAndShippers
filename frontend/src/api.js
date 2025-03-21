@@ -7,7 +7,6 @@ const api = axios.create({
   baseURL: 'https://truckerandshippers.onrender.com/api', // ✅ Vite handles env variables like this
 });
 
-// Attach token if available
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
