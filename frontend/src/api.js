@@ -4,7 +4,7 @@ import axios from 'axios';
 console.log(import.meta.env.VITE_BACKEND_URL);
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api', // ✅ Vite handles env variables like this
+  baseURL: 'https://truckerandshippers.onrender.com/', // ✅ Vite handles env variables like this
 });
 
 // Attach token if available
